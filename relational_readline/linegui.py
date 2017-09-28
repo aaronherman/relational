@@ -308,12 +308,10 @@ def exec_query(command: str) -> None:
         command+= second[0]
         command+= ' _UNION ' #∪
         command+= second[1]
-        print(command)
 
     # Performs replacements for weird operators
     command = replacements(command)
-    print(command)
-    
+
     # Finds the name in where to save the query
     parts = command.split('=', 1)
     relname,query = maintenance.UserInterface.split_query(command)        

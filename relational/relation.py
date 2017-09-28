@@ -169,14 +169,6 @@ class Relation (object):
                 newt.content.add(i + j)
         return newt
 
-    def union(self, other: 'Union') -> 'Union':
-        '''
-        Union of two tables.
-        '''
-
-        pass
-
-
     def projection(self, * attributes) -> 'Relation':
         '''
         Can be called in two different ways:
