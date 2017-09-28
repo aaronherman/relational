@@ -289,12 +289,34 @@ def exec_query(command: str) -> None:
     else:
         printrel = True
 
-    # Performs replacements for weird operators
-    command = replacements(command)
+    
 
     # Finds the name in where to save the query
     parts = command.split('=', 1)
     relname,query = maintenance.UserInterface.split_query(command)
+    print("command")
+    print(command)
+    print("query")
+    print(query)
+
+    if command.split("(")[0] == 'UNION':
+        first = command.split("(")
+        second = first[1].split(",")
+        second[1] = second[1].rstrip(")")
+
+        command = ''
+        command+= second[0]
+        command+= ' _UNION ' #∪
+        command+= second[1]
+        print(command)
+
+    # Performs replacements for weird operators
+    command = replacements(command)
+    print(command)
+    
+    # Finds the name in where to save the query
+    parts = command.split('=', 1)
+    relname,query = maintenance.UserInterface.split_query(command)        
 
     # Execute query
     try:
