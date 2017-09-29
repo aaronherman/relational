@@ -45,15 +45,17 @@ PROJECTION = 'π'
 SELECTION = 'σ'
 RENAME = 'ρ'
 ARROW = '➡'
+SORT = '∆'
 
 b_operators = (PRODUCT, DIFFERENCE, UNION, INTERSECTION, DIVISION,
                JOIN, JOIN_LEFT, JOIN_RIGHT, JOIN_FULL)  # List of binary operators
-u_operators = (PROJECTION, SELECTION, RENAME)  # List of unary operators
+u_operators = (PROJECTION, SELECTION, RENAME, SORT)  # List of unary operators
 
 # Associates operator with python method
 op_functions = {
     PRODUCT: 'product', DIFFERENCE: 'difference', UNION: 'union', INTERSECTION: 'intersection', DIVISION: 'division', JOIN: 'join',
-    JOIN_LEFT: 'outer_left', JOIN_RIGHT: 'outer_right', JOIN_FULL: 'outer', PROJECTION: 'projection', SELECTION: 'selection', RENAME: 'rename'}
+    JOIN_LEFT: 'outer_left', JOIN_RIGHT: 'outer_right', JOIN_FULL: 'outer', PROJECTION: 'projection', SELECTION: 'selection', RENAME: 'rename',
+    SORT: 'sort'}
 
 
 class TokenizerException (Exception):
@@ -190,7 +192,7 @@ class Node:
             prop = self.prop
 
             # Converting parameters
-            if self.name == PROJECTION:
+            if self.name == PROJECTION or self.name == SORT:
                 prop = '\"%s\"' % prop.replace(' ', '').replace(',', '\",\"')
             elif self.name == RENAME:
                 prop = '{\"%s\"}' % prop.replace(
@@ -359,7 +361,7 @@ def tokenize(expression: str) -> list:
             # Removes the entire parentesis and content from the expression
             expression = expression[end + 1:].strip()
 
-        elif expression.startswith((SELECTION, RENAME, PROJECTION)):  # Unary operators
+        elif expression.startswith((SELECTION, RENAME, PROJECTION, SORT)):  # Unary operators
             items.append(expression[0:1])
                          # Adding operator in the top of the list
             expression = expression[
@@ -396,10 +398,13 @@ def tree(expression: str) -> Node:
 
 def parse(expr: str) -> CallableString:
     '''This function parses a relational algebra expression, and returns a
-    CallableString (a string that can be called) whith the corresponding
+    CallableString (a string that can be called) with the corresponding
     Python expression.
     '''
     return tree(expr).toPython()
+
+def special_parse(expr: str) -> CallableString:
+    pass
 
 if __name__ == "__main__":
     while True:

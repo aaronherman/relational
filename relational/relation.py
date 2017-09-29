@@ -141,7 +141,8 @@ class Relation (object):
             attributes = {attr: i[j].autocast()
                           for j, attr in enumerate(self.header)
                           }
-
+            # there is a computational redundancy
+            # I assume that for i in self.content share the same attributes tuples.
             try:
                 if eval(c_expr, attributes):
                     newt.content.add(i)
@@ -215,6 +216,20 @@ class Relation (object):
         newt.content = self.content
         self._make_duplicate(newt)
         return newt
+
+    def sort(self, * attributes) -> 'Relation':
+        '''
+        sorts a relation by a list of prioritized column names
+
+        sort is only a representation, only performed if it's the last operation
+        Relation objects use sets to store data, which does not store ordering
+        A new wrapper class SortedRelation is created to store ordering
+        '''
+
+        sorted_relation=SortedRelation(self,attributes)
+
+        return sorted_relation
+
 
     def intersection(self, other: 'Relation') -> 'Relation':
         '''
@@ -483,7 +498,6 @@ class Relation (object):
         self.content = self.difference(self.selection(expr)).content
         return len(self.content) - l
 
-
 class Header(tuple):
 
     '''This class defines the header of a relation.
@@ -540,6 +554,53 @@ class Header(tuple):
         except ValueError as e:
             raise Exception('One of the fields is not in the relation: %s' % ','.join(param))
 
+class SortedRelation(Relation):
+
+    def __init__(self,relation,attributes):
+        self._readonly=relation._readonly
+        self.content=relation.content
+        self.header=relation.header
+        if not isinstance(attributes[0], str):
+            attributes = attributes[0]
+
+        ids=self.header.getAttributesId(attributes)
+
+        self.sorted=sorted(self.content, key=lambda x: tuple(x[i] for i in ids))
+
+    def __str__(self):
+        m_len = [len(i) for i in self.header]  # Maximum length string
+
+        for f in self.sorted:
+            for col, i in enumerate(f):
+                if len(i) > m_len[col]:
+                    m_len[col] = len(i)
+
+        res = ""
+        for f, attr in enumerate(self.header):
+            res += "%s" % (attr.ljust(2 + m_len[f]))
+
+        for r in self.sorted:
+            res += "\n"
+            for col, i in enumerate(r):
+                res += "%s" % (i.ljust(2 + m_len[col]))
+
+        return res
+
+
 # Backwards compatibility
 relation = Relation
 header = Header
+
+
+if __name__=="__main__":
+    from relational_readline import linegui
+    linegui.exec_line("LOAD ../samples/people.csv")
+    linegui.exec_line("_PROJECTION id, name (people)")
+    linegui.exec_line("_SORT id, name (people)")
+    # james:
+    # parse.special_parse() has been created.
+    # it needs to return a callable string in the format executable by relations context object
+    # namely, different formats need to return the same string
+    # e.g.: "people.projection("id","name")"
+    # once it's done, the next line can be run without error.
+    linegui.exec_line("sort(student, SName)")

@@ -131,4 +131,5 @@ if __name__ == "__main__":
             )
             sys.exit(3)
         relational_readline.linegui.version = version
+        # here
         relational_readline.linegui.main(files)
