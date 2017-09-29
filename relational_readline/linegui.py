@@ -268,11 +268,16 @@ def replacements(query: str) -> str:
         ('_SELECTION', parser.SELECTION),
         ('_RENAME', parser.RENAME),
         ('_DIVISION', parser.DIVISION),
+        ('_SORT',parser.SORT)
     )
     for asciiop, op in rules:
         query = query.replace(asciiop, op)
     return query
 
+def special_parse(query):
+    # takes in a function format query to produce a callable string in the original format
+    # only tested on sort at the moment
+    pass
 
 def exec_query(command: str) -> None:
     '''
@@ -318,8 +323,11 @@ def exec_query(command: str) -> None:
 
     # Execute query
     try:
-        pyquery = parser.parse(query)
-        result = pyquery(relations)
+        if False: #query[0].islower():
+            pyquery=parser.special_parse(query)
+        else:
+            pyquery = parser.parse(query)
+        result = pyquery(relations) # "people.projection("id","name")"
 
         printtty(colorize("-> query: %s" % pyquery, COLOR_GREEN))
 
