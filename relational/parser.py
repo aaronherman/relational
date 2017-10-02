@@ -26,6 +26,8 @@
 # http://ltworf.github.io/relational/grammar.html
 from typing import Optional, Union, List, Any
 
+import re
+
 from relational import rtypes
 
 RELATION = 0
@@ -361,6 +363,31 @@ def tokenize(expression: str) -> list:
             # Removes the entire parentesis and content from the expression
             expression = expression[end + 1:].strip()
 
+        # Textbook syntax. Executes queries as code, which call union or sort functions.
+        # The functions return lists, allowing these calls to be nested.
+        elif expression.startswith(("sort", "union")):
+            def union(t1, t2):
+                return [t1, UNION, t2]
+
+            def sort(t, cols):
+                if isinstance(cols, list):
+                    return [SORT, ", ".join(cols), [t]]
+                return [SORT, cols, [t]]
+
+            exp_chunks = re.compile('\w+').findall(expression)
+            for chunk in exp_chunks:
+                expression = expression.replace(chunk, "{}")
+            expression = re.sub('\w', "", expression)
+            formatted_chunks = []
+            for chunk in exp_chunks:
+                if chunk != "sort" and chunk != "union":
+                    formatted_chunks.append("'{}'".format(chunk))
+                else:
+                    formatted_chunks.append(chunk)
+            expression = expression.format(*formatted_chunks)
+            items = eval(expression)
+            expression = ""
+
         elif expression.startswith((SELECTION, RENAME, PROJECTION, SORT)):  # Unary operators
             items.append(expression[0:1])
                          # Adding operator in the top of the list
@@ -387,6 +414,8 @@ def tokenize(expression: str) -> list:
                     break
             items.append(expression[:r])
             expression = expression[r:].strip()
+    print("items: ")
+    print(items)
     return items
 
 

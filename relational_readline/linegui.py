@@ -338,6 +338,8 @@ def exec_query(command: str) -> None:
         relations[relname] = result
 
         completer.add_completion(relname)
+
+        return result
     except Exception as e:
         print(colorize(str(e), ERROR_COLOR))
 

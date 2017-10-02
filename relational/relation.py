@@ -595,6 +595,8 @@ header = Header
 if __name__=="__main__":
     from relational_readline import linegui
     linegui.exec_line("LOAD ../samples/people.csv")
+    linegui.exec_line("LOAD ../samples/fakepeople.csv")
+    linegui.exec_line("LOAD ../samples/peeps.csv")
     linegui.exec_line("_PROJECTION id, name (people)")
     linegui.exec_line("_SORT id, name (people)")
     # james:
@@ -603,4 +605,7 @@ if __name__=="__main__":
     # namely, different formats need to return the same string
     # e.g.: "people.projection("id","name")"
     # once it's done, the next line can be run without error.
-    linegui.exec_line("sort(student, SName)")
+    linegui.exec_line("sort(sort(people, id), [id, name])")
+    linegui.exec_line("people _UNION fakepeople")
+    print("\n")
+    linegui.exec_line("sort(union(union(people, fakepeople), peeps), name)")
